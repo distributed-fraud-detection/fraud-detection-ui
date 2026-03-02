@@ -47,7 +47,7 @@ export default function Sidebar() {
             {/* Navigation */}
             <nav className="sidebar-nav">
                 <div className="nav-section-label">Navigation</div>
-                {navItems.map(({ to, icon: Icon, label, id }) => (
+                {navItems.map(({ to, icon, label, id }) => (
                     <NavLink
                         key={to}
                         to={to}
@@ -55,7 +55,7 @@ export default function Sidebar() {
                         end={to === '/'}
                         className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
                     >
-                        <span className="nav-icon"><Icon size={17} strokeWidth={2} /></span>
+                        <span className="nav-icon">{React.createElement(icon, { size: 17, strokeWidth: 2 })}</span>
                         <span className="nav-label">{label}</span>
                         <ChevronRight size={14} className="nav-arrow" />
                     </NavLink>

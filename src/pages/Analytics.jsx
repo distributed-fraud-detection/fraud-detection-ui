@@ -103,7 +103,7 @@ export default function Analytics() {
             await triggerBatch();
             showToast('Batch job triggered — metrics will refresh shortly.', 'success');
             setTimeout(load, 3000); // reload after 3s to capture new data
-        } catch (e) {
+        } catch {
             showToast('Batch trigger failed — check the analytics-service.', 'danger');
         } finally {
             setBatchRunning(false);

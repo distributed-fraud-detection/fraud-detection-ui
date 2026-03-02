@@ -292,9 +292,9 @@ export default function Simulator({ timings = {} }) {
                                             { icon: DollarSign, label: 'Amount', value: `₹${result.amount?.toLocaleString('en-IN')}` },
                                             { icon: MapPin, label: 'Location', value: result.location },
                                             { icon: Clock, label: 'Timestamp', value: format(new Date(result.timestamp), 'HH:mm:ss') },
-                                        ].map(({ icon: Icon, label, value }) => (
+                                        ].map(({ icon, label, value }) => (
                                             <div key={label} className="result-row">
-                                                <Icon size={13} color="var(--text-muted)" />
+                                                {React.createElement(icon, { size: 13, color: "var(--text-muted)" })}
                                                 <span className="text-muted" style={{ fontSize: 12 }}>{label}</span>
                                                 <span className="font-mono" style={{ marginLeft: 'auto', fontSize: 12 }}>{value}</span>
                                             </div>

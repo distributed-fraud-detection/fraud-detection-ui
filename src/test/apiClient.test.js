@@ -1,5 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import axios from 'axios';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 // Mock axios module
 vi.mock('axios', async () => {
@@ -41,11 +40,11 @@ describe('apiClient', () => {
 });
 
 describe('transactionApi', () => {
-    let createTransaction, getTransaction;
+    let createTransaction;
 
     beforeEach(async () => {
         vi.resetModules();
-        ({ createTransaction, getTransaction } = await import('../api/transactionApi'));
+        ({ createTransaction } = await import('../api/transactionApi'));
     });
 
     it('createTransaction returns response data', async () => {

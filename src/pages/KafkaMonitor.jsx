@@ -14,7 +14,7 @@ const TOPICS = [
 export default function KafkaMonitor() {
     const [stats, setStats] = useState(null);
     const [iframeKey, setIframeKey] = useState(0); // force iframe reload
-    const [loading, setLoading] = useState(true);
+    const [, setLoading] = useState(true);
 
     useEffect(() => {
         const loadStats = async () => {

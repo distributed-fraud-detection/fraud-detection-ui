@@ -23,7 +23,7 @@ function StatusBadge({ status }) {
 export default function CaseManagement() {
     const [cases, setCases] = useState([]);
     const [total, setTotal] = useState(0);
-    const [page, setPage] = useState(0);
+    const [page] = useState(0);
     const [filter, setFilter] = useState('ALL');
     const [search, setSearch] = useState('');
     const [selected, setSelected] = useState(null);
@@ -40,7 +40,6 @@ export default function CaseManagement() {
 
     const load = useCallback(async () => {
         setLoading(true);
-        setError(null); // Clear previous errors
         try {
             const data = await getFraudCases(page, PAGE_SIZE);
             const items = data?.content ?? (Array.isArray(data) ? data : []);
@@ -48,7 +47,7 @@ export default function CaseManagement() {
             setTotal(data?.totalElements ?? items.length);
         } catch (e) {
             console.error('Failed to load cases:', e);
-            setError(e.backendMessage || 'Could not connect to the backend. Is the API Gateway running?');
+            showToast(e.backendMessage || 'Could not connect to the backend. Is the API Gateway running?', 'danger');
         } finally {
             setLoading(false);
         }
@@ -232,9 +231,9 @@ export default function CaseManagement() {
                                     { icon: User, label: 'User', value: selected.userId },
                                     { icon: TrendingUp, label: 'Transaction', value: selected.transactionId?.slice(0, 14) + '…' },
                                     { icon: Clock, label: 'Created', value: selected.createdAt ? format(parseISO(selected.createdAt), 'MMM dd, HH:mm:ss') : '—' },
-                                ].map(({ icon: Icon, label, value }) => (
+                                ].map(({ icon, label, value }) => (
                                     <div key={label} style={{ display: 'flex', gap: 8, fontSize: 12, alignItems: 'flex-start' }}>
-                                        <Icon size={13} color="var(--text-muted)" style={{ marginTop: 1 }} />
+                                        {React.createElement(icon, { size: 13, color: "var(--text-muted)", style: { marginTop: 1 } })}
                                         <div>
                                             <div className="text-muted" style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 2 }}>{label}</div>
                                             <div className="mono" style={{ fontWeight: 500 }}>{value}</div>
