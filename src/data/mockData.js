@@ -64,7 +64,7 @@ const generateFraudCases = (transactions) => {
             riskScore: t.riskScore,
             decision: t.decision,
             status: t.status,
-            timestamp: t.timestamp,
+            createdAt: t.timestamp,
             flagReason: t.riskScore > 0.85
                 ? 'High-value transaction in high-risk geography'
                 : t.riskScore > 0.75
@@ -84,11 +84,11 @@ const generateDailyAnalytics = () => {
         const blocked = Math.floor(Math.random() * 40 + 10);
         data.push({
             date: format(date, 'MMM dd'),
-            fullDate: date.toISOString(),
+            metricDate: date.toISOString(),
             totalTransactions: totalTxns,
-            fraudulent,
-            reviewed,
-            blocked,
+            fraudCount: fraudulent,
+            reviewCount: reviewed,
+            blockCount: blocked,
             approved: totalTxns - fraudulent - reviewed,
             fraudRate: Math.round((fraudulent / totalTxns) * 1000) / 10,
             avgRiskScore: Math.round((Math.random() * 0.3 + 0.3) * 100) / 100,
@@ -97,17 +97,21 @@ const generateDailyAnalytics = () => {
     return data;
 };
 
-// Top risky users
 const generateTopRiskyUsers = () => {
-    return userIds.map((uid, i) => ({
-        userId: uid,
-        userName: userNames[i],
-        totalTransactions: Math.floor(Math.random() * 50 + 10),
-        fraudCount: Math.floor(Math.random() * 15 + 2),
-        avgRiskScore: Math.round((Math.random() * 0.4 + 0.5) * 100) / 100,
-        totalAmount: Math.round(Math.random() * 500000 + 50000),
-        lastSeen: subMinutes(new Date(), Math.floor(Math.random() * 1440)).toISOString(),
-    })).sort((a, b) => b.avgRiskScore - a.avgRiskScore);
+    return userIds.map((uid, i) => {
+        const score = Math.round((Math.random() * 0.4 + 0.5) * 100) / 100;
+        return {
+            userId: uid,
+            userName: userNames[i],
+            txnFrequency: Math.floor(Math.random() * 50 + 10),
+            recentFraudCount: Math.floor(Math.random() * 15 + 2),
+            riskScore: score,
+            riskLevel: score > 0.8 ? 'CRITICAL' : (score > 0.65 ? 'HIGH' : 'MEDIUM'),
+            topRiskFactor: ['Velocity', 'High Amount', 'VPN/Tor IP', 'New Device', 'Geographic Distance'][Math.floor(Math.random() * 5)],
+            totalAmount: Math.round(Math.random() * 500000 + 50000),
+            lastSeen: subMinutes(new Date(), Math.floor(Math.random() * 1440)).toISOString(),
+        };
+    }).sort((a, b) => b.riskScore - a.riskScore);
 };
 
 // Risk distribution for pie chart
