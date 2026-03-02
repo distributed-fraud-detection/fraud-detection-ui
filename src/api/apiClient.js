@@ -30,6 +30,12 @@ apiClient.interceptors.response.use(
             localStorage.removeItem('auth_token');
             window.location.href = '/login';
         }
+
+        // Extract backend ErrorResponse DTO message if available
+        if (error.response && error.response.data && error.response.data.message) {
+            error.backendMessage = error.response.data.message;
+        }
+
         return Promise.reject(error);
     }
 );

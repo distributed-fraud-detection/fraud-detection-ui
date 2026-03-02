@@ -40,13 +40,15 @@ export default function CaseManagement() {
 
     const load = useCallback(async () => {
         setLoading(true);
+        setError(null); // Clear previous errors
         try {
             const data = await getFraudCases(page, PAGE_SIZE);
             const items = data?.content ?? (Array.isArray(data) ? data : []);
             setCases(items);
             setTotal(data?.totalElements ?? items.length);
         } catch (e) {
-            showToast('Failed to load cases. Is the backend running?', 'danger');
+            console.error('Failed to load cases:', e);
+            setError(e.backendMessage || 'Could not connect to the backend. Is the API Gateway running?');
         } finally {
             setLoading(false);
         }
@@ -67,7 +69,8 @@ export default function CaseManagement() {
                 action === 'approve' ? 'success' : 'danger'
             );
         } catch (e) {
-            showToast('Review action failed — check backend connection', 'danger');
+            console.error('Review action failed:', e);
+            showToast(e.backendMessage || 'Review action failed — check backend connection', 'danger');
         } finally {
             setReviewing(null);
         }

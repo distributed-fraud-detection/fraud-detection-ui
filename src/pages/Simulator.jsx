@@ -35,6 +35,7 @@ export default function Simulator() {
     const [step, setStep] = useState(0);
     const [log, setLog] = useState([]);
     const [autoMode, setAutoMode] = useState(false);
+    const [errorMessage, setErrorMessage] = useState(null);
     const [backendOnline, setBackendOnline] = useState(null); // null=unknown, true, false
     const autoRef = useRef(null);
 
@@ -90,6 +91,7 @@ export default function Simulator() {
 
         setStatus('processing');
         setResult(null);
+        setErrorMessage(null);
         setStep(0);
 
         try {
@@ -121,6 +123,7 @@ export default function Simulator() {
 
         } catch (e) {
             console.error('Transaction simulation failed:', e);
+            setErrorMessage(e.backendMessage || 'Transaction failed. Ensure the backend is running and Kafka is up.');
             setStatus('error');
         }
     }, [form, advanceSteps, pollForDecision]);
@@ -196,7 +199,7 @@ export default function Simulator() {
                                 </div>
                                 {status === 'error' && (
                                     <div style={{ padding: '10px 12px', borderRadius: 8, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', fontSize: 12, color: '#ef4444' }}>
-                                        ⚠ Transaction failed. Ensure the backend is running and Kafka is up.
+                                        ⚠ {errorMessage}
                                     </div>
                                 )}
                                 {autoMode && (

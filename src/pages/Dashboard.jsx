@@ -101,7 +101,7 @@ export default function Dashboard() {
             setRecentCases(cases.slice(0, 8));
         } catch (e) {
             console.error('Dashboard load error:', e);
-            setError('Could not connect to the backend. Is the API Gateway running at localhost:8080?');
+            setError(e.backendMessage || 'Could not connect to the backend. Is the API Gateway running at localhost:8080?');
         } finally {
             setLoading(false);
         }

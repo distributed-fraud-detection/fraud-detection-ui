@@ -88,8 +88,8 @@ export default function Analytics() {
                 topRiskFactor: u.topRiskFactor ?? '—',
             })));
         } catch (e) {
-            console.error('Analytics load error:', e);
-            showToast('Could not load analytics — backend may not be running.', 'danger');
+            console.error('Failed to execute job:', e);
+            showToast(e.backendMessage || 'Job execution failed', 'danger');
         } finally {
             setLoading(false);
         }
@@ -113,9 +113,9 @@ export default function Analytics() {
     // Derived KPIs
     const totalFraud = dailyData.reduce((a, d) => a + d.fraudulent, 0);
     const avgFraudRate = dailyData.length
-        ? (dailyData.reduce((a, d) => a + d.fraudRate, 0) / dailyData.length).toFixed(1)
+        ? (dailyData.reduce((a, d) => a + (d.fraudRate ?? 0), 0) / dailyData.length).toFixed(1)
         : 0;
-    const highRiskUsers = riskUsers.filter(u => u.riskScore > 0.8).length;
+    const highRiskUsers = riskUsers.filter(u => (u.riskScore ?? 0) > 0.8).length;
 
     const kpiCards = [
         { label: 'Total Fraud Events', value: totalFraud, color: 'var(--status-block)', icon: AlertTriangle, change: `${dateRange} window`, up: null },
@@ -300,12 +300,12 @@ export default function Analytics() {
                                                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                                                         <div className="risk-bar" style={{ width: 60 }}>
                                                             <div className="risk-bar-fill" style={{
-                                                                width: `${u.riskScore * 100}%`,
-                                                                background: u.riskScore > 0.8 ? '#ef4444' : u.riskScore > 0.65 ? '#f59e0b' : '#3b82f6',
+                                                                width: `${(u.riskScore ?? 0) * 100}%`,
+                                                                background: (u.riskScore ?? 0) > 0.8 ? '#ef4444' : (u.riskScore ?? 0) > 0.65 ? '#f59e0b' : '#3b82f6',
                                                             }} />
                                                         </div>
-                                                        <span style={{ fontFamily: 'JetBrains Mono', fontSize: 12, fontWeight: 700, color: u.riskScore > 0.8 ? 'var(--status-block)' : u.riskScore > 0.65 ? 'var(--status-review)' : 'var(--accent-blue-light)' }}>
-                                                            {u.riskScore.toFixed(2)}
+                                                        <span style={{ fontFamily: 'JetBrains Mono', fontSize: 12, fontWeight: 700, color: (u.riskScore ?? 0) > 0.8 ? 'var(--status-block)' : (u.riskScore ?? 0) > 0.65 ? 'var(--status-review)' : 'var(--accent-blue-light)' }}>
+                                                            {(u.riskScore ?? 0).toFixed(2)}
                                                         </span>
                                                     </div>
                                                 </td>
