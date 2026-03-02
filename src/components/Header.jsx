@@ -2,7 +2,7 @@ import React from 'react';
 import { Bell, Search, RefreshCw } from 'lucide-react';
 import './Header.css';
 
-export default function Header({ title, subtitle }) {
+export default function Header({ title, subtitle, action }) {
     const [time, setTime] = React.useState(new Date());
 
     React.useEffect(() => {
@@ -20,6 +20,8 @@ export default function Header({ title, subtitle }) {
             </div>
 
             <div className="header-right">
+                {action}
+
                 {/* Search */}
                 <div className="header-search">
                     <Search size={14} className="search-icon" />

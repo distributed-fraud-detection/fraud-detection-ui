@@ -23,7 +23,7 @@ const PIPELINE_STEPS = [
 
 const randomRange = (min, max) => Math.round(Math.random() * (max - min) + min);
 
-export default function Simulator() {
+export default function Simulator({ timings = {} }) {
     const [form, setForm] = useState({
         userId: 'u001',
         amount: '',
@@ -38,6 +38,11 @@ export default function Simulator() {
     const [errorMessage, setErrorMessage] = useState(null);
     const [backendOnline, setBackendOnline] = useState(null); // null=unknown, true, false
     const autoRef = useRef(null);
+    const heartbeatIntervalMs = timings.heartbeatIntervalMs ?? 15000;
+    const stepBaseDelayMs = timings.stepBaseDelayMs ?? 380;
+    const stepJitterDelayMs = timings.stepJitterDelayMs ?? 180;
+    const pollIntervalMs = timings.pollIntervalMs ?? 1500;
+    const autoModeIntervalMs = timings.autoModeIntervalMs ?? 3500;
 
     // Heartbeat check
     useEffect(() => {
@@ -50,33 +55,33 @@ export default function Simulator() {
             }
         };
         check();
-        const t = setInterval(check, 15000);
+        const t = setInterval(check, heartbeatIntervalMs);
         return () => clearInterval(t);
-    }, []);
+    }, [heartbeatIntervalMs]);
 
     const advanceSteps = useCallback(async () => {
         // Animate through pipeline steps with slight delays
         for (let i = 0; i <= PIPELINE_STEPS.length; i++) {
-            await new Promise(r => setTimeout(r, 380 + Math.random() * 180));
+            await new Promise(r => setTimeout(r, stepBaseDelayMs + Math.random() * stepJitterDelayMs));
             setStep(i);
         }
-    }, []);
+    }, [stepBaseDelayMs, stepJitterDelayMs]);
 
     const pollForDecision = useCallback(async (transactionId, maxRetries = 12) => {
         setStatus('polling');
         for (let attempt = 0; attempt < maxRetries; attempt++) {
-            await new Promise(r => setTimeout(r, 1500));
+            await new Promise(r => setTimeout(r, pollIntervalMs));
             try {
                 const page = await getFraudCases(0, 50);
                 const cases = page?.content ?? (Array.isArray(page) ? page : []);
                 const match = cases.find(c => c.transactionId === transactionId);
                 if (match) return match;
-            } catch (e) {
+            } catch {
                 // Ignore transient errors during polling
             }
         }
         return null; // Decision not yet available
-    }, []);
+    }, [pollIntervalMs]);
 
     const simulate = useCallback(async (isAuto = false) => {
         const amount = isAuto ? randomRange(1000, 95000) : parseFloat(form.amount);
@@ -130,12 +135,12 @@ export default function Simulator() {
 
     useEffect(() => {
         if (autoMode) {
-            autoRef.current = setInterval(() => simulate(true), 3500);
+            autoRef.current = setInterval(() => simulate(true), autoModeIntervalMs);
         } else {
             clearInterval(autoRef.current);
         }
         return () => clearInterval(autoRef.current);
-    }, [autoMode, simulate]);
+    }, [autoMode, autoModeIntervalMs, simulate]);
 
     const decisionColor = result?.decision === 'APPROVE'
         ? 'var(--status-approve)' : result?.decision === 'REVIEW'
@@ -162,26 +167,26 @@ export default function Simulator() {
                             <div className="section-title"><Send size={14} /> Send Transaction</div>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                                 <div className="form-group">
-                                    <label className="form-label">User ID</label>
+                                    <label className="form-label" htmlFor="sim-userId">User ID</label>
                                     <select id="sim-userId" className="input" value={form.userId} onChange={e => setForm(p => ({ ...p, userId: e.target.value }))}>
                                         {USER_IDS.map(u => <option key={u} value={u}>{u}</option>)}
                                     </select>
                                 </div>
                                 <div className="form-group">
-                                    <label className="form-label">Amount (₹)</label>
+                                    <label className="form-label" htmlFor="sim-amount">Amount (₹)</label>
                                     <div style={{ position: 'relative' }}>
                                         <DollarSign size={14} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
                                         <input id="sim-amount" className="input" style={{ paddingLeft: 32 }} type="number" min="1" max="100000" placeholder="e.g. 15000" value={form.amount} onChange={e => setForm(p => ({ ...p, amount: e.target.value }))} />
                                     </div>
                                 </div>
                                 <div className="form-group">
-                                    <label className="form-label">Location</label>
+                                    <label className="form-label" htmlFor="sim-location">Location</label>
                                     <select id="sim-location" className="input" value={form.location} onChange={e => setForm(p => ({ ...p, location: e.target.value }))}>
                                         {LOCATIONS.map(l => <option key={l} value={l}>{l}</option>)}
                                     </select>
                                 </div>
                                 <div className="form-group">
-                                    <label className="form-label">Merchant Type</label>
+                                    <label className="form-label" htmlFor="sim-merchantType">Merchant Type</label>
                                     <select id="sim-merchantType" className="input" value={form.merchantType} onChange={e => setForm(p => ({ ...p, merchantType: e.target.value }))}>
                                         {MERCHANT_TYPES.map(m => <option key={m} value={m}>{m}</option>)}
                                     </select>
@@ -204,7 +209,7 @@ export default function Simulator() {
                                 )}
                                 {autoMode && (
                                     <div className="sim-auto-badge">
-                                        <div className="live-dot" />Auto-generating transactions every 3.5s (real backend)
+                                        <div className="live-dot" />Auto-generating transactions every {(autoModeIntervalMs / 1000).toFixed(1)}s (real backend)
                                     </div>
                                 )}
                             </div>
